@@ -47,18 +47,26 @@ while(cap.isOpened()):
                 print(number)
                 trajectory = np.append(trajectory, np.array([[centerx,centery]]), axis=0)
                 traj  = np.append(traj, np.array([[centerx,centery_aux]]), axis=0)
+                j = traj.shape[0]
+                print(j)
+                angle = np.rad2deg(np.arctan2(traj[j-1,1] - traj[j-2,1], traj[j-1,0] - traj[j-2,0]))
+                angle = np.round(angle,1)
+                frame1 = cv2.putText(frame1, str(angle), (50,50*(number+1)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv2.LINE_AA)
         
         for i in range(1, trajectory.shape[0]-1):
             cv2.line(frame1, (trajectory[i,0],trajectory[i,1]), (trajectory[i+1,0], trajectory[i+1,1]), (0,255,0), 3)
         #print(number)
         
+        
         cv2.imshow('Frame',frame1)
         cv2.imshow('Threshold', thresh)
 
         # Press Q on keyboard to  exit
-        if cv2.waitKey(100) & 0xFF == ord('q'):
+        key = cv2.waitKey(300)
+        if key == ord('q'):
             break
-
+        if key == ord('p'):
+            cv2.waitKey(-1) #wait until any key is pressed
   # Break the loop
   else: 
     break
@@ -66,8 +74,16 @@ while(cap.isOpened()):
 # When everything done, release the video capture object
 traj = np.delete(traj,0, axis=0)
 plt.plot(traj[:,0], traj[:,1], c='r' )
+angle_arr = np.empty((1, 0), int)
+for i in range(1, traj.shape[0]-1):
+    # print(traj[i,1]-traj[i+1,1],traj[i,0]-traj[i+1,0])
+    angle = np.rad2deg(np.arctan2(traj[i+1,1] - traj[i,1], traj[i+1,0] - traj[i,0]))
+    # angle = np.rad2deg(np.arctan2(y[-1] - y[0], x[-1] - x[0]))
+    angle_arr = np.append(angle_arr, angle)
+    print(angle)
+
+plt.plot(traj[2:,0], angle_arr, c='r' )
 
 cap.release()
-
 # Closes all the frames
 cv2.destroyAllWindows()
